@@ -1,6 +1,10 @@
 use std::fmt::Display;
 use std::path::PathBuf;
 
+use tracing::debug;
+
+use crate::config::Config;
+
 pub enum Language {
     Unsupported,
     Clojure,
@@ -21,4 +25,16 @@ pub fn detect_language(path: PathBuf) -> Language {
         Some("clj" | "cljs" | "cljc" | "edn") => Language::Clojure,
         _ => Language::Unsupported,
     }
+}
+
+pub fn check(config: Config, files: Vec<PathBuf>) {
+    debug!("Check formatting");
+    debug!("Config: {:?}", config);
+    debug!("Files: {:?}", files)
+}
+
+pub fn fix(config: Config, files: Vec<PathBuf>) {
+    debug!("Fix formatting");
+    debug!("Config: {:?}", config);
+    debug!("Files: {:?}", files)
 }

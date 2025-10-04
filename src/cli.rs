@@ -1,9 +1,11 @@
 use std::{collections::VecDeque, fs, path::PathBuf};
 
 use clap::{Parser, Subcommand};
-use tracing::debug;
 
-use crate::config::Config;
+use crate::cli;
+use crate::config;
+use crate::formatter;
+use crate::logger;
 
 #[derive(Debug, Parser)]
 #[command(name = "tsf")]
@@ -60,30 +62,23 @@ pub fn collect_files(paths: Vec<PathBuf>) -> Vec<PathBuf> {
     files
 }
 
-pub fn check(config: Config, paths: Vec<PathBuf>) {
-    debug!("Check formatting");
-    debug!("Paths: {:?}", paths);
-    debug!("Config: {:?}", config);
-    let files = collect_files(paths);
-    debug!("Files: {:?}", files)
-}
+pub fn run() {
+    let cli = cli::parse();
+    logger::init(cli.debug);
+    let config = config::load(cli.config_path);
+    let command = cli.command.unwrap();
 
-pub fn fix(config: Config, paths: Vec<PathBuf>) {
-    debug!("Fix formatting");
-    debug!("Paths: {:?}", paths);
-    debug!("Config: {:?}", config);
-    let files = collect_files(paths);
-    debug!("Files: {:?}", files)
-}
-
-pub fn show_version() {
-    println!("{}", env!("CARGO_PKG_VERSION"));
-}
-
-pub fn run(config: Config, command: Commands) {
     match command {
-        Commands::Version => show_version(),
-        Commands::Check { paths } => check(config, paths.clone()),
-        Commands::Fix { paths } => fix(config, paths.clone()),
+        Commands::Version => {
+            println!("{}", env!("CARGO_PKG_VERSION"));
+        }
+        Commands::Check { paths } => {
+            let files = collect_files(paths.clone());
+            formatter::check(config, files)
+        }
+        Commands::Fix { paths } => {
+            let files = collect_files(paths.clone());
+            formatter::fix(config, files)
+        }
     }
 }
