@@ -35,3 +35,11 @@ impl Config {
         Self::parse(&content)
     }
 }
+
+pub fn load(path: Option<PathBuf>) -> Config {
+    match path {
+        // TODO: Configuration file not found - show error message
+        Some(path) => Config::load(path).unwrap_or_default(),
+        None => Config::default(),
+    }
+}
