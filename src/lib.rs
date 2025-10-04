@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
+use tracing::{Level, debug};
+
 use config::Config;
 
 pub mod config;
@@ -13,6 +15,10 @@ pub struct Cli {
     /// Use a custom configuration file
     #[arg(long, value_name = "FILE", default_value = "tsf.toml")]
     pub config_path: Option<PathBuf>,
+
+    /// Show debug info
+    #[arg(long)]
+    pub debug: bool,
 
     #[command(subcommand)]
     pub command: Option<Commands>,
@@ -38,6 +44,12 @@ pub enum Commands {
     Version,
 }
 
+pub fn init_logger(debug: bool) {
+    let level = if debug { Level::DEBUG } else { Level::INFO };
+
+    tracing_subscriber::fmt().with_max_level(level).init();
+}
+
 pub fn load_config(path: Option<PathBuf>) -> Config {
     match path {
         // TODO: Configuration file not found - show error message
@@ -47,13 +59,13 @@ pub fn load_config(path: Option<PathBuf>) -> Config {
 }
 
 pub fn check(config: Config, path: Vec<PathBuf>) {
-    println!("Check: {:?}", path);
-    println!("{:?}", config)
+    debug!("Check: {:?}", path);
+    debug!("{:?}", config)
 }
 
 pub fn fix(config: Config, path: Vec<PathBuf>) {
-    println!("Fix: {:?}", path);
-    println!("{:?}", config)
+    debug!("Fix: {:?}", path);
+    debug!("{:?}", config)
 }
 
 pub fn show_version() {
