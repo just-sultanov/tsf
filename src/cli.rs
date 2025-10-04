@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{collections::VecDeque, fs, path::PathBuf};
 
 use clap::{Parser, Subcommand};
 use tracing::debug;
@@ -27,12 +27,12 @@ pub enum Commands {
     /// Check formatting
     Check {
         /// Paths to files or directories
-        path: Vec<PathBuf>,
+        paths: Vec<PathBuf>,
     },
     /// Fix formatting
     Fix {
         /// Paths to files or directories
-        path: Vec<PathBuf>,
+        paths: Vec<PathBuf>,
     },
     /// Show version
     Version,
@@ -42,14 +42,38 @@ pub fn parse() -> Cli {
     Cli::parse()
 }
 
-pub fn check(config: Config, path: Vec<PathBuf>) {
-    debug!("Check: {:?}", path);
-    debug!("{:?}", config)
+pub fn collect_files(paths: Vec<PathBuf>) -> Vec<PathBuf> {
+    let mut files = Vec::new();
+    let mut queue: VecDeque<PathBuf> = paths.into_iter().collect();
+
+    while let Some(path) = queue.pop_front() {
+        if path.is_dir() {
+            if let Ok(entries) = fs::read_dir(&path) {
+                for entry in entries.flatten() {
+                    queue.push_back(entry.path());
+                }
+            }
+        } else if path.is_file() {
+            files.push(path);
+        }
+    }
+    files
 }
 
-pub fn fix(config: Config, path: Vec<PathBuf>) {
-    debug!("Fix: {:?}", path);
-    debug!("{:?}", config)
+pub fn check(config: Config, paths: Vec<PathBuf>) {
+    debug!("Check formatting");
+    debug!("Paths: {:?}", paths);
+    debug!("Config: {:?}", config);
+    let files = collect_files(paths);
+    debug!("Files: {:?}", files)
+}
+
+pub fn fix(config: Config, paths: Vec<PathBuf>) {
+    debug!("Fix formatting");
+    debug!("Paths: {:?}", paths);
+    debug!("Config: {:?}", config);
+    let files = collect_files(paths);
+    debug!("Files: {:?}", files)
 }
 
 pub fn show_version() {
@@ -59,7 +83,7 @@ pub fn show_version() {
 pub fn run(config: Config, command: Commands) {
     match command {
         Commands::Version => show_version(),
-        Commands::Check { path } => check(config, path.clone()),
-        Commands::Fix { path } => fix(config, path.clone()),
+        Commands::Check { paths } => check(config, paths.clone()),
+        Commands::Fix { paths } => fix(config, paths.clone()),
     }
 }
