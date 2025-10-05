@@ -3,18 +3,10 @@ use std::fs;
 use std::path::PathBuf;
 
 #[derive(Debug, Deserialize)]
-pub struct General {
-    pub indent_size: usize,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Clojure {
-    pub indent_size: usize,
-}
+pub struct Clojure {}
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
-    pub general: General,
     pub clojure: Option<Clojure>,
 }
 
