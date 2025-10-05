@@ -12,26 +12,26 @@ pub struct Config {
 
 impl Default for Config {
     fn default() -> Self {
-        Self::parse(include_str!("../tsf.toml")).unwrap()
+        parse(include_str!("../tsf.toml")).unwrap()
     }
 }
 
-impl Config {
-    pub fn parse(content: &str) -> anyhow::Result<Self> {
-        let config = toml::from_str(content)?;
-        Ok(config)
-    }
-
-    pub fn load(path: PathBuf) -> anyhow::Result<Self> {
-        let content = fs::read_to_string(path)?;
-        Self::parse(&content)
-    }
+pub fn parse(content: &str) -> anyhow::Result<Config> {
+    let config = toml::from_str(content)?;
+    Ok(config)
 }
 
 pub fn load(path: Option<PathBuf>) -> Config {
     match path {
         // TODO: Configuration file not found - show error message
-        Some(path) => Config::load(path).unwrap_or_default(),
+        Some(path) => {
+            if path.exists() {
+                let content = fs::read_to_string(path).unwrap();
+                parse(&content).unwrap_or(Config::default())
+            } else {
+                Config::default()
+            }
+        }
         None => Config::default(),
     }
 }
