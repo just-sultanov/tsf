@@ -1,3 +1,3 @@
 fn main() {
-    tsf::cli::run();
+    tsf::run();
 }
